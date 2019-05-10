@@ -1,4 +1,4 @@
-🤖 This is BETA version of AuDD telegram bot
+🤖 This is BETA version of AudD telegram bot
 
 
 🤓 For developers:
