@@ -1,6 +1,7 @@
+from itertools import starmap
 from dataclasses import dataclass
 
-from text_utils import html_fmt, text
+from text_utils import song_fmt, text, html_fmt
 
 
 @dataclass
@@ -26,8 +27,11 @@ class Song:
 
     @property
     def pretty_text(self):
-        return '\n'.join([f"{html_fmt(key.capitalize())}: {html_fmt(val, 'code')}"
-                          for key, val in vars(self).items() if isinstance(val, str)])
+        return '\n'.join(
+            [f"{song_fmt(val)}: {html_fmt(val, 'code')}"
+             for key, val in vars(self).items() if isinstance(val, str)
+             ]
+        )
 
 
 @dataclass
@@ -39,22 +43,24 @@ class Lyrics:
 
     @property
     def pretty_text(self):
-        return text(html_fmt(self.text, 'code'))
+        return text((self.text, 'code'))
 
     @property
-    def _text(self):
+    def full_text(self):
         return text(self.full_title, self.lyrics.replace('\r', ''))
 
     @property
     def text(self):
-        return self._get_nice
-
-    @property
-    def _get_nice(self):
         lines = []
-        for line in self._text.splitlines():
+        for line in self.full_text.splitlines():
             if line and line[0].startswith(' '):
                 lines.append(line[1:])
             else:
                 lines.append(line)
         return '\n'.join(lines)
+
+
+class LyricsListMapped:
+    @staticmethod
+    def mapped(func, lyrics_list):
+        return list(starmap(func, enumerate(lyrics_list)))

@@ -7,7 +7,6 @@ from apiaudd.requests import MainRequests
 
 var = os.environ.get
 
-
 TOKEN = var('BOT_TOKEN')
 bot = Bot(TOKEN, parse_mode='html')
 disp = Dispatcher(bot, storage=MemoryStorage())

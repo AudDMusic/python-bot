@@ -9,10 +9,10 @@ onVideo = disp.message_handler(content_types=[types.ContentType.VIDEO, types.Con
 
 
 @onAudio
-async def file_comes(message: types.Message):
+async def voice_comes(message: types.Message):
     await message.reply(
-        await AuddBot.recognize_by_url(message),
-        reply_markup=Buttons.get_lyrics_buttons(message)
+        await AuddBot.ByUrl.song(message),
+        reply_markup=Buttons[message, 'get']
     )
 
 

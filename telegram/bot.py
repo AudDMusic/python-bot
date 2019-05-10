@@ -1,18 +1,24 @@
+# TODO: as many of functions are somehow duplicated, @`replace them`
+
 import os
 from hashlib import blake2b
 import logging
 
-from aiogram import types, exceptions
+from aiogram import types
 
 from additional.audio import Process
-from misc import bot, audd
+from apiaudd.models import LyricsListMapped, Lyrics, Response
+from misc import bot, audd, TOKEN
 
 from locales import Text
 
 logger = logging.getLogger(__name__)
 
-base_url = 'https://api.telegram.org/file/bot%s/{file_path}' % getattr(bot, '_BaseBot__token')
+base_url = f'https://api.telegram.org/file/bot{TOKEN}/' + '{file_path}'
 VIDEO_DESTINATION = 'videos_tmp/'
+
+markup = types.InlineKeyboardMarkup
+button = types.InlineKeyboardButton
 
 
 if not os.path.exists(VIDEO_DESTINATION):
@@ -33,94 +39,96 @@ async def get_file_path(message: types.Message):
     return (await ftype.get_file()).file_path
 
 
-def _get_lyrics_list(iq, lyrics_list, lyrics_attr='pretty_text', default_lyrics_attr='...'):
-    return [types.InlineQueryResultArticle(
+def create_article(n, lyrics: Lyrics):
+    return types.InlineQueryResultArticle(
         reply_markup=types.InlineKeyboardMarkup().add(
-            types.InlineKeyboardButton('↗️', switch_inline_query=lyrics.full_title)),
+            types.InlineKeyboardButton(
+                '↗️', switch_inline_query=lyrics.full_title)),
         input_message_content=types.InputTextMessageContent(
-            message_text=f'{getattr(lyrics, lyrics_attr)[:4096], default_lyrics_attr}'),
+            message_text=lyrics.pretty_text[:4096]),
         id=f'{n}',
         title=lyrics.title, description=lyrics.full_title)
-        for n, lyrics in enumerate(lyrics_list)
-    ]
 
 
 class Buttons:
     @staticmethod
-    def close_lyrics_buttons(event, cache=''):
-        key = 'close:lyrics'
-        if cache:
-            key = f'ccached:{cache}'
-        return types.InlineKeyboardMarkup().add(
-            types.InlineKeyboardButton(Text['closeLyrics', event], callback_data=key))
+    def get_copy(func):
+        return {
+            'callback_data': f'{func}:lyrics',
+            'text': f'{func}Lyrics'  # text key
+        }
 
     @staticmethod
-    def get_lyrics_buttons(event, cache=''):
-        key = 'get:lyrics'
-        if cache:
-            key = f'ocached:{cache}'
-        return types.InlineKeyboardMarkup().row(
-            types.InlineKeyboardButton(text=Text['getLyrics', event], callback_data=key))
+    def __class_getitem__(items):
+        """
+        Nice magic markup creation
+        :param items: event, 'close' or 'get', cache key
+        :return:
+        """
+        kwargs = Buttons.get_copy(items[1])
+        kwargs['text'] = Text[kwargs['text'], items[0]]
+
+        if len(items) == 3:
+            kwargs['callback_data'] = f'{items[1]}:cached:{items[2]}'
+
+        return markup().add(button(**kwargs))
 
 
 class AuddBot:
-    @staticmethod
-    async def recognize_by_url(message: types.Message, url=None):
-        possible_err = 'recognizeError', 'incorrectInput'
+    class ByUrl:
+        @staticmethod
+        async def get(what: str, message: types.Message, url=None):
+            """
+            Simple get
+            :param what: can be song, lyrics
+            :param message:
+            :param url:
+            :return:
+            """
 
-        file_path = await get_file_path(message)
+            possible_err = 'lyricsError', 'incorrectInput'
 
-        if file_path:
-            url = base_url.format(file_path=file_path)
-            resp, song = await audd.find_base(url, telegram_file_path=file_path)
+            file_path = await get_file_path(message)
+            resp, item = Response('error'), None
 
-        elif not url and not file_path:
-            return Text[possible_err[1], message]
+            if file_path:
+                url = base_url.format(file_path=file_path)
+                resp, item = await audd.find_lyrics(url, telegram_file_path=file_path)
 
-        else:
-            resp, song = await audd.find_base(url)
+            elif not url:
+                return Text[possible_err[1], message]
 
-        if all([resp.status == resp.success, song]):
-            return song.pretty_text
+            else:
+                if what == 'lyrics':
+                    resp, item = await audd.find_lyrics(url)
 
-        return Text[possible_err[0], message]
+                elif what == 'song':
+                    resp, item = await audd.find_base(url)
 
-    @staticmethod
-    async def get_lyrics(message: types.Message, url=None):
-        possible_err = 'lyricsError', 'incorrectInput'
+            if resp.status == resp.success and item:
+                return item.pretty_text
 
-        file_path = await get_file_path(message)
+            return Text[possible_err[0], message]
 
-        if file_path:
-            url = base_url.format(file_path=file_path)
-            resp, lyrics = await audd.find_lyrics(url, telegram_file_path=file_path)
+        @staticmethod
+        async def lyrics(message, url=None):
+            return await AuddBot.ByUrl.get('lyrics', message, url)
 
-        elif not url and not file_path:
-            return Text[possible_err[1], message]
-
-        else:
-            resp, lyrics = await audd.find_lyrics(url)
-
-        if all([resp.status == resp.success, lyrics]):
-            return lyrics.pretty_text
-
-        return Text[possible_err[0], message]
+        @staticmethod
+        async def song(message, url=None):
+            return await AuddBot.ByUrl.get('song', message, url)
 
     @staticmethod
     async def find_lyrics_by_entered(iq: types.InlineQuery):
         resp, lyrics_list = await audd.get_lyrics(iq.query)
 
         if resp.status == resp.success and lyrics_list:
-            results = _get_lyrics_list(iq, lyrics_list)
-
-            try:
-                await iq.answer(results, cache_time=0)
-            except exceptions.CantParseEntities:
-                results = _get_lyrics_list(iq, lyrics_list, 'text')
-                await iq.answer(results, cache_time=0)
+            results = LyricsListMapped.mapped(create_article, lyrics_list)
+            await iq.answer(results, cache_time=0)
 
     @staticmethod
     async def extract_audio_recognize(msg: types.Message):
+        # todo rewrite
         possible_err = 'recognizeError', 'incorrectInput'
 
         ftype = getattr(msg, 'video') or getattr(msg, 'video_note')
@@ -130,34 +138,39 @@ class AuddBot:
 
         proccess = Process(file.name, clip_duration=dur//2)
 
-        base64 = await proccess.convert_to_base64(True)
+        base64 = await proccess.convert_to_base64()
 
         hcache = hash_cache(msg)
         resp, song = await audd.find_by_audio(base64, hcache)
 
-        if all([resp.status == resp.success, song]):
-            return song.pretty_text, Buttons.get_lyrics_buttons(msg, hcache)
+        if resp.status == resp.success and song:
+            return song.pretty_text, Buttons[msg, 'get', hcache]
 
         return Text[possible_err[0], msg], None
 
-    @staticmethod
-    async def get_song_by_cache_key(msg: types.Message, cache_key):
-        possible_err = 'recognizeError', 'incorrectInput'
+    class Cached:
+        @staticmethod
+        async def get(what: str, message: types.Message, cache_key):
+            possible_err = 'recognizeError', 'incorrectInput'
+            resp, item, action = Response('error'), None, None
 
-        resp, song = await audd.get_cached_song(cache_key)
+            if what == 'song':
+                action = 'get'
+                resp, item = await audd.get_cached_song(cache_key)
 
-        if all([resp.status == resp.success, song]):
-            return song.pretty_text, Buttons.get_lyrics_buttons(msg, cache_key)
+            elif what == 'lyrics':
+                action = 'close'
+                resp, item = await audd.find_lyrics(cache_key=cache_key)
 
-        return Text[possible_err[0], msg], None
+            if resp.status == resp.success and item:
+                return {'text': item.pretty_text, 'reply_markup': Buttons[message, action, cache_key]}
 
-    @staticmethod
-    async def get_lyrics_by_cache_key(msg: types.Message, cache_key):
-        possible_err = 'recognizeError', 'incorrectInput'
+            return {'text': Text[possible_err[0], message], 'reply_markup': None}
 
-        resp, lyrics = await audd.find_lyrics(cache_key=cache_key)
+        @staticmethod
+        async def lyrics(message, cache_key):
+            return await AuddBot.Cached.get('lyrics', message, cache_key)
 
-        if all([resp.status == resp.success, lyrics]):
-            return lyrics.pretty_text, Buttons.close_lyrics_buttons(msg, cache_key)
-
-        return Text[possible_err[0], msg], None
+        @staticmethod
+        async def song(message, cache_key):
+            return await AuddBot.Cached.get('song', message, cache_key)
