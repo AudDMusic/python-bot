@@ -1,0 +1,9 @@
+version: '3'
+services:
+  audd_bot:
+    build: .
+    restart: on-failure
+    volumes:
+      - ".:/usr/src/audd_telegram"
+    command: "sh -ac 'make build; python3.7 worker.py'"
+    env_file: ".env"

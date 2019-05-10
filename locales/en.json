@@ -1,0 +1,10 @@
+{
+  "recognizeError": "Could not recognize this song",
+  "incorrectInput": "This format is incorrect",
+  "lyricsError": "Could not get lyrics",
+
+  "closeLyrics": "Close",
+  "getLyrics": "Get lyrics",
+
+  "ad": "Powered by audd.io"
+}
