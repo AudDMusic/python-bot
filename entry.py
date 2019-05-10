@@ -3,26 +3,25 @@ import asyncio
 import logging
 
 from telegram import setup
-
 from misc import disp
 
-
-fmt = logging.Formatter('%(asctime)s [%(levelname)s] %(message)s')
-logging.basicConfig(level=int(os.environ.get('LOG_LEVEL', 40)), format=fmt)
-
+logging.basicConfig(level=int(os.environ.get('LOG_LEVEL', 40)))
 
 loop = asyncio.get_event_loop()
 
 
+async def polling():
+    await disp.skip_updates()
+    await disp.start_polling()
+
+
 def run_bot():
+    logger = logging.getLogger(__name__)
     setup()
 
-    async def main():
-        await disp.skip_updates()
-        await disp.start_polling()
-
     try:
-        loop.run_until_complete(main())
+        logger.info(f'AudDBot is getting UP')
+        loop.run_until_complete(polling())
     except KeyboardInterrupt:
         loop.close()
-        os._exit(1)
+        exit(1)

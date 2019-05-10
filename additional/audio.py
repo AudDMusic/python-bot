@@ -35,25 +35,14 @@ class Process:
         with open(self.audio_path, mode="rb") as fp:
             self.base64 = base64.b64encode(fp.read())
 
-    async def convert_to_base64(self, r=None):
-        """
-
-        :param r: passing True will erase both clip and audio files saved locally
-                  passing float point number will take it as a timeout to delete after r
-                  passing anything else won't do anything
-        :return:
-        """
+    async def convert_to_base64(self, file_lifetime=.5):
         await loop.run_in_executor(None, self._run)
 
-        if isinstance(r, float) or r:
-            timeout = r
-            if isinstance(r, bool):
-                timeout = .1
+        async def inner_task():
+            await asyncio.sleep(file_lifetime)
+            for file in [self.clip_path, self.audio_path]:
+                os.remove(file)
 
-            async def inner_task():
-                await asyncio.sleep(timeout)
-                for file in [self.clip_path, self.audio_path]:
-                    os.remove(file)
-            loop.create_task(inner_task())
+        loop.create_task(inner_task())
 
         return self.base64

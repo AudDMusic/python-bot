@@ -79,7 +79,7 @@ class MainRequests:
             song = Song(**{arg: results.get(arg) for arg in SONG_GET_ARGS})
         return Response(status), song
 
-    async def _base_get(self, params: dict, key='result', url=None) -> (str, typing.Any):
+    async def _base_get(self, params: dict, key='result', url=None) -> typing.Tuple[str, typing.Any]:
         """
         Base get request designed for audd api
         :param params: query params
@@ -103,8 +103,7 @@ class MainRequests:
             resp_json = await resp.json() or {}
             results = resp_json.get('result')
 
-            if is_ok(resp):
-                if results:
-                    song = Song(**{arg: results.get(arg) for arg in SONG_GET_ARGS})
+            if is_ok(resp) and results:
+                song = Song(**{arg: results.get(arg) for arg in SONG_GET_ARGS})
 
             return Response(resp_json.get('status')), song

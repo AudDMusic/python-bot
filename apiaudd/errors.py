@@ -31,7 +31,8 @@ class AudDApiError(Exception):
 
 
 def is_ok(server_response: ClientResponse or int):
-    exception = AudDApiError(getattr(server_response, 'status', server_response))
+    server_response = server_response if isinstance(server_response, int) else server_response.status
+    exception = AudDApiError(server_response)
     if exception.status == 'ok':
         return 'ok'
     raise exception

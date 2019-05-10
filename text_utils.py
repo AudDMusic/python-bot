@@ -12,8 +12,8 @@ EMOJI_ANNOTATIONS = {
 }
 
 
-def decode(s: str, _escape: bool = True):
-    if _escape:
+def decode(s: str, use_escape: bool = True):
+    if use_escape:
         return str(escape(s)).encode().decode()
     return str(s).encode().decode()
 
@@ -22,12 +22,15 @@ html_escape = escape
 
 
 def html_fmt(s: str, fmt='b', use_escape: bool = True):
+    decoded = decode(s.replace("\r", "").replace("\t", " "), False)
+    decor = html_escape if use_escape else lambda *args, **kwargs: args[0]
+    return f'<{fmt}>{decor(decoded, quote=False).replace("_", " ")}</{fmt}>'
+
+
+def song_fmt(s: str, fmt='', use_escape: bool = True):
     if s.lower() in EMOJI_ANNOTATIONS:
         s = f'{EMOJI_ANNOTATIONS[s.lower()]} {s.capitalize()}'
-
-    decoded = decode(s.replace("\r", "").replace("\t", " "), False)
-    _decor = html_escape if use_escape else lambda *args, **kwargs: args[0]
-    return f'<{fmt}>{_decor(decoded, quote=False).replace("_", " ")}</{fmt}>'
+    return html_fmt(s, fmt, use_escape)
 
 
 def text(*args, sep='\n'):
