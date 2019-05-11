@@ -2,11 +2,13 @@ import asyncio
 
 from aiogram import types
 
-from ..bot import AuddBot, Buttons, Text
+from locales import Text
 from misc import disp
 
-onClick = disp.callback_query_handler
+from ..bot import AudDBot
+from ..buttons import Buttons
 
+onClick = disp.callback_query_handler
 
 loop = asyncio.get_event_loop()
 
@@ -16,14 +18,12 @@ def tasker(*coros):
         loop.create_task(coro)
 
 
-def get_message_with_url(call: types.CallbackQuery):
+def get_message_with_url(call: types.CallbackQuery, url=None):
     message = call.message.reply_to_message
-    url = None
-    if message:
-        url = None
-        if message.entities:
-            if isinstance(message.entities[0], types.MessageEntityType.URL):
-                url = message.text
+
+    if message and message.entities:
+        if isinstance(message.entities[0], types.MessageEntityType.URL):
+            url = message.text
 
     return message, url
 
@@ -42,11 +42,11 @@ async def get_or_close_lyrics(call: types.CallbackQuery):
 
     if message:
         markup = Buttons[message, 'get'] if isw(call, 'close:') else Buttons[message, 'close']
-        method = AuddBot.ByUrl.song if isw(call, 'close:') else AuddBot.ByUrl.lyrics
+        method = AudDBot.ByUrl.song if isw(call, 'close:') else AudDBot.ByUrl.lyrics
 
         tasker(
             edit(Text.loading),
-            edit(await method(message, url), reply_markup=markup)
+            edit(await method(message, url, False), reply_markup=markup)
         )
 
 
@@ -55,7 +55,7 @@ async def close_title(call: types.CallbackQuery):
     cached = call.data.split(':')[-1]
     edit = call.message.edit_text
 
-    do_get = AuddBot.Cached.lyrics if isw(call, 'get:cached') else AuddBot.Cached.song
+    do_get = AudDBot.Cached.lyrics if isw(call, 'get:cached') else AudDBot.Cached.song
 
     tasker(
         edit(Text.loading),

@@ -23,12 +23,10 @@ class Song:
     underground: bool = False
     timecode: str = None
 
-    parse_mode = 'html'
-
     @property
     def pretty_text(self):
         return '\n'.join(
-            [f"{song_fmt(val)}: {html_fmt(val, 'code')}"
+            [f"{song_fmt(key, 'b')}: {html_fmt(val, 'code')}"
              for key, val in vars(self).items() if isinstance(val, str)
              ]
         )
@@ -43,7 +41,7 @@ class Lyrics:
 
     @property
     def pretty_text(self):
-        return text((self.text, 'code'))
+        return html_fmt(self.text, 'code')
 
     @property
     def full_text(self):
@@ -60,7 +58,7 @@ class Lyrics:
         return '\n'.join(lines)
 
 
-class LyricsListMapped:
+class LyricsList:
     @staticmethod
     def mapped(func, lyrics_list):
         return list(starmap(func, enumerate(lyrics_list)))
