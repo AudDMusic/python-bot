@@ -1,8 +1,8 @@
 from aiogram import types
 
 from misc import disp
-from ..bot import AuddBot, Buttons
 
+from ..bot import AudDBot
 
 onAudio = disp.message_handler(content_types=[types.ContentType.VOICE, types.ContentType.AUDIO])
 onVideo = disp.message_handler(content_types=[types.ContentType.VIDEO, types.ContentType.VIDEO_NOTE])
@@ -10,13 +10,14 @@ onVideo = disp.message_handler(content_types=[types.ContentType.VIDEO, types.Con
 
 @onAudio
 async def voice_comes(message: types.Message):
+    txt, markup = await AudDBot.ByUrl.song(message)
     await message.reply(
-        await AuddBot.ByUrl.song(message),
-        reply_markup=Buttons[message, 'get']
+        text=txt,
+        reply_markup=markup
     )
 
 
 @onVideo
 async def video_comes(message: types.Message):
-    txt, markup = await AuddBot.extract_audio_recognize(message)
+    txt, markup = await AudDBot.Video.extract_audio_recognize(message)
     await message.reply(txt, reply_markup=markup)

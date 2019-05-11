@@ -1,7 +1,9 @@
 from aiogram import types
 
-from ..bot import AuddBot, Buttons, Text
+from locales import Text
 from misc import disp
+
+from ..bot import AudDBot
 
 onText = disp.message_handler
 
@@ -15,7 +17,9 @@ async def cmd_start(message: types.Message):
 
 @onText(regexp=r'(www|http:|https:)+[^\s]+[\w]')
 async def file_by_url(message: types.Message):
+    txt, markup = await AudDBot.ByUrl.song(message, url=message.text)
+
     await message.reply(
-        await AuddBot.ByUrl.song(message, url=message.text),
-        reply_markup=Buttons[message, 'get']
+        text=txt,
+        reply_markup=markup
     )

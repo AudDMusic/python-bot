@@ -57,12 +57,13 @@ class MainRequests:
 
         params = {'q': excerpt_or_title}
         status, results = await self._base_get(params, url=url)
+        lyrics = None
 
         if results:
             lyrics = [Lyrics(**{arg: song.get(arg) for arg in LYRICS_GET_ARGS})
                       for song in results[:max_songs] if isinstance(song, dict)]
 
-            return Response(status), lyrics
+        return Response(status), lyrics
 
     async def get_cached_song(self, cache_key, to_return=''):
         """

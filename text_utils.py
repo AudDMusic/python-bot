@@ -18,12 +18,9 @@ def decode(s: str, use_escape: bool = True):
     return str(s).encode().decode()
 
 
-html_escape = escape
-
-
 def html_fmt(s: str, fmt='b', use_escape: bool = True):
     decoded = decode(s.replace("\r", "").replace("\t", " "), False)
-    decor = html_escape if use_escape else lambda *args, **kwargs: args[0]
+    decor = escape if use_escape else lambda *args, **kwargs: args[0]
     return f'<{fmt}>{decor(decoded, quote=False).replace("_", " ")}</{fmt}>'
 
 
