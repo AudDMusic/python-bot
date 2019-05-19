@@ -9,8 +9,10 @@ class TextThrottlingMiddleware(BaseThrottlingMiddleware):
 
         dispatcher = self.MetaUtils.dispatcher.get_current()
         if handler:
-            limit = getattr(handler, 'throttling_rate_limit', self.rate_limit)
-            key = getattr(handler, 'throttling_key', f"{self.prefix}_{handler.__name__}")
+            limit = getattr(handler, "throttling_rate_limit", self.rate_limit)
+            key = getattr(
+                handler, "throttling_key", f"{self.prefix}_{handler.__name__}"
+            )
         else:
             limit = self.rate_limit
             key = f"{self.prefix}_message"
@@ -28,19 +30,25 @@ class TextThrottlingMiddleware(BaseThrottlingMiddleware):
         handler = self.MetaUtils.current_handler.get()
         dispatcher = self.MetaUtils.dispatcher.get_current()
         if handler:
-            key = getattr(handler, 'throttling_key', f"{self.prefix}_{handler.__name__}")
+            key = getattr(
+                handler, "throttling_key", f"{self.prefix}_{handler.__name__}"
+            )
         else:
             key = f"{self.prefix}_message"
 
         delta = throttled.rate - throttled.delta + 2
         if throttled.exceeded_count <= 2:
-            setattr(self, 'message_to_edit', await message.reply(f'Bot locked for {round(delta, 2)}'))
+            setattr(
+                self,
+                "message_to_edit",
+                await message.reply(f"Bot locked for {round(delta, 2)}"),
+            )
 
         await self.MetaUtils.sleep(delta)
 
         thr = await dispatcher.check_key(key)
         if thr.exceeded_count == throttled.exceeded_count:
             # user unlocked
-            to_edit = getattr(self, 'message_to_edit')
+            to_edit = getattr(self, "message_to_edit")
             if to_edit:
-                await to_edit.edit_text('Bot unlocked')
+                await to_edit.edit_text("Bot unlocked")

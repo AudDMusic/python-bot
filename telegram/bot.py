@@ -7,6 +7,10 @@ logger = logging.getLogger(__name__)
 
 
 class AudDBot:
+    """
+    Main helper bot instance
+    """
+
     Cached = cached.Cached(audd)
     Inline = inlinequery.Inline(audd)
     ByUrl = by_url.ByUrl(audd)

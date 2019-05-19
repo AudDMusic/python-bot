@@ -8,8 +8,8 @@ from text_utils import song_fmt, text, html_fmt
 class Response:
     status: str
 
-    error = 'error'
-    success = 'success'
+    error = "error"
+    success = "success"
 
 
 @dataclass
@@ -25,10 +25,12 @@ class Song:
 
     @property
     def pretty_text(self):
-        return '\n'.join(
-            [f"{song_fmt(key, 'b')}: {html_fmt(val, 'code')}"
-             for key, val in vars(self).items() if isinstance(val, str)
-             ]
+        return "\n".join(
+            [
+                f"{song_fmt(key, 'b')}: {html_fmt(val, 'code')}"
+                for key, val in vars(self).items()
+                if isinstance(val, str)
+            ]
         )
 
 
@@ -41,21 +43,21 @@ class Lyrics:
 
     @property
     def pretty_text(self):
-        return html_fmt(self.text, 'code')
+        return html_fmt(self.text, "code")
 
     @property
     def full_text(self):
-        return text(self.full_title, self.lyrics.replace('\r', ''))
+        return text(self.full_title, self.lyrics.replace("\r", ""))
 
     @property
     def text(self):
         lines = []
         for line in self.full_text.splitlines():
-            if line and line[0].startswith(' '):
+            if line and line[0].startswith(" "):
                 lines.append(line[1:])
             else:
                 lines.append(line)
-        return '\n'.join(lines)
+        return "\n".join(lines)
 
 
 class LyricsList:
