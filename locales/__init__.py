@@ -24,7 +24,7 @@ def _get_text(key, lang, default=None) -> str:
 
 
 def _get_lang(event):
-    lang = event.from_user.language_code or "en"
+    lang = event.from_user.language_code[:2] or "en"
     if lang in langs:
         return lang
     return "en"
@@ -34,7 +34,8 @@ class Text:
     @staticmethod
     def __class_getitem__(items):
         """
-
+        >>> Text['start', 'en']
+        ... 'Hey send me anything listenable'
         :param items: Sequenced items _> langKey
         :return:
         """
