@@ -35,29 +35,30 @@ def call_data_startswith(call: types.CallbackQuery, prefix):
 isw = call_data_startswith
 
 
-@onClick(lambda call: call.data in ['get:lyrics', 'close:lyrics'])
+@onClick(lambda call: call.data in ["get:lyrics", "close:lyrics"])
 async def get_or_close_lyrics(call: types.CallbackQuery):
     message, url = get_message_with_url(call)
     edit = call.message.edit_text
 
     if message:
-        markup = Buttons[message, 'get'] if isw(call, 'close:') else Buttons[message, 'close']
-        method = AudDBot.ByUrl.song if isw(call, 'close:') else AudDBot.ByUrl.lyrics
+        markup = (
+            Buttons[message, "get"]
+            if isw(call, "close:")
+            else Buttons[message, "close"]
+        )
+        method = AudDBot.ByUrl.song if isw(call, "close:") else AudDBot.ByUrl.lyrics
 
         tasker(
             edit(Text.loading),
-            edit(await method(message, url, False), reply_markup=markup)
+            edit(await method(message, url, False), reply_markup=markup),
         )
 
 
-@onClick(lambda c: isw(c, 'get:cached:') or isw(c, 'close:cached:'))
+@onClick(lambda c: isw(c, "get:cached:") or isw(c, "close:cached:"))
 async def close_title(call: types.CallbackQuery):
-    cached = call.data.split(':')[-1]
+    cached = call.data.split(":")[-1]
     edit = call.message.edit_text
 
-    do_get = AudDBot.Cached.lyrics if isw(call, 'get:cached') else AudDBot.Cached.song
+    do_get = AudDBot.Cached.lyrics if isw(call, "get:cached") else AudDBot.Cached.song
 
-    tasker(
-        edit(Text.loading),
-        edit(**{await do_get(call.message, cached)})
-    )
+    tasker(edit(Text.loading), edit(**(await do_get(call.message, cached))))

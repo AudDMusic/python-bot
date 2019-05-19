@@ -11,8 +11,8 @@ class UnsupportedLang(Exception):
 
 
 langs = {
-    'ru': json.load(open(f'{BASE_DIR}/locales/ru.json')),
-    'en': json.load(open(f'{BASE_DIR}/locales/en.json'))
+    "ru": json.load(open(f"{BASE_DIR}/locales/ru.json")),
+    "en": json.load(open(f"{BASE_DIR}/locales/en.json")),
 }
 
 
@@ -24,17 +24,25 @@ def _get_text(key, lang, default=None) -> str:
 
 
 def _get_lang(event):
-    return event.from_user.language_code or 'en'
+    lang = event.from_user.language_code or "en"
+    if lang in langs:
+        return lang
+    return "en"
 
 
 class Text:
     @staticmethod
     def __class_getitem__(items):
+        """
+
+        :param items: Sequenced items _> langKey
+        :return:
+        """
         if len(items) in [2, 3]:
             key, lang, *default = items
             if isinstance(lang, (types.CallbackQuery, types.Message)):
                 lang = _get_lang(lang)[:2]
             return _get_text(key, lang, default[0] if default else None)
-        raise ValueError(f'Ensure you passed right args to Text class')
+        raise ValueError(f"Ensure you passed right args to Text class")
 
-    loading = '<b>...</b>'
+    loading = "<b>...</b>"

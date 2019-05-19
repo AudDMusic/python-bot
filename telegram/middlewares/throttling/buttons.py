@@ -9,8 +9,10 @@ class CallbackQuery(BaseThrottlingMiddleware):
 
         dispatcher = self.MetaUtils.dispatcher.get_current()
         if handler:
-            limit = getattr(handler, 'throttling_rate_limit', self.rate_limit)
-            key = getattr(handler, 'throttling_key', f"{self.prefix}_{handler.__name__}")
+            limit = getattr(handler, "throttling_rate_limit", self.rate_limit)
+            key = getattr(
+                handler, "throttling_key", f"{self.prefix}_{handler.__name__}"
+            )
         else:
             limit = self.rate_limit
             key = f"{self.prefix}_call"
@@ -27,6 +29,6 @@ class CallbackQuery(BaseThrottlingMiddleware):
     async def call_throttled(self, call: types.CallbackQuery, throttled):
         delta = throttled.rate - throttled.delta
         if throttled.exceeded_count <= 2:
-            await call.answer(f'You were banned\nWait {delta}')
+            await call.answer(f"You were banned\nWait {delta}")
 
         await self.MetaUtils.sleep(delta)

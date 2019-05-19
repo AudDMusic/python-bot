@@ -5,7 +5,7 @@ import logging
 from telegram import setup
 from misc import disp
 
-logging.basicConfig(level=int(os.environ.get('LOG_LEVEL', 40)))
+logging.basicConfig(level=int(os.environ.get("LOG_LEVEL", 40)))
 
 loop = asyncio.get_event_loop()
 
@@ -20,7 +20,7 @@ def run_bot():
     setup()
 
     try:
-        logger.info(f'AudDBot is getting UP')
+        logger.info(f"AudDBot is getting UP")
         loop.run_until_complete(polling())
     except KeyboardInterrupt:
         loop.close()

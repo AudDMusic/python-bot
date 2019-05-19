@@ -10,7 +10,8 @@ class BaseThrottlingMiddleware(BaseMiddleware):
     """
     Simple middleware
     """
-    prefix = 'antiflood_'
+
+    prefix = "antiflood_"
 
     class MetaUtils:
         throttled = Throttled

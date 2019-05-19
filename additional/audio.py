@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 loop = asyncio.get_event_loop()
 
 F_TO_DEFAULT = (2, 12)
-AUDIOS_DIR = 'audios_tmp'
+AUDIOS_DIR = "audios_tmp"
 
 if not os.path.exists(AUDIOS_DIR):
     os.mkdir(AUDIOS_DIR)
@@ -22,9 +22,11 @@ def _2blake2b(s: str):
 
 
 class Process:
-    def __init__(self, clip_path: str, audio_path: str = None, clip_duration=F_TO_DEFAULT):
+    def __init__(
+        self, clip_path: str, audio_path: str = None, clip_duration=F_TO_DEFAULT
+    ):
         self.clip_path = clip_path
-        self.audio_path = audio_path or f'{AUDIOS_DIR}/{_2blake2b(clip_path)}.mp3'
+        self.audio_path = audio_path or f"{AUDIOS_DIR}/{_2blake2b(clip_path)}.mp3"
         self.base64 = None
         self.clip_duration = clip_duration
 
@@ -35,7 +37,7 @@ class Process:
         with open(self.audio_path, mode="rb") as fp:
             self.base64 = base64.b64encode(fp.read())
 
-    async def convert_to_base64(self, file_lifetime=.5):
+    async def convert_to_base64(self, file_lifetime=0.5):
         await loop.run_in_executor(None, self._run)
 
         async def inner_task():
