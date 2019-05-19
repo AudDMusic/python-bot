@@ -37,8 +37,6 @@ Updating::
 ------------------------------------------
 Main requirement: python3.7.X ::
 
-    git clone https://github.com/AudDMusic/python-bot.git
-    cd python-bot
     python -m pip install virtualenv
     virtualenv venv
     source venv/bin/activate
