@@ -1,13 +1,11 @@
-import os
 import asyncio
 import logging
 
 from telegram import setup
 from misc import disp
 
-logging.basicConfig(level=int(os.environ.get("LOG_LEVEL", 40)))
-
 loop = asyncio.get_event_loop()
+logger = logging.getLogger(__name__)
 
 
 async def polling():
@@ -16,7 +14,6 @@ async def polling():
 
 
 def run_bot():
-    logger = logging.getLogger(__name__)
     setup()
 
     try:

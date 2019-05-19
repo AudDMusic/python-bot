@@ -4,7 +4,9 @@ from aiogram import Bot, Dispatcher
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 
 from apiaudd.requests import MainRequests
+import read_env
 
+read_env.read_argv()
 var = os.environ.get
 
 TOKEN = var("BOT_TOKEN")
