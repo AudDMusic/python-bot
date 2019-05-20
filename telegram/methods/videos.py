@@ -34,7 +34,7 @@ class Video:
     async def extract_audio_recognize(self, msg: types.Message):
         possible_err = "recognizeError", "incorrectInput"
 
-        ftype = getattr(msg, "video") or getattr(msg, "video_note")
+        ftype = msg.video or msg.video_note
         dur = ftype.duration
 
         file = await self.bot.download_file_by_id(
