@@ -3,3 +3,4 @@ env
 __pycache__/
 */__pycache__/
 .env
+*_tmp
