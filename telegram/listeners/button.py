@@ -39,6 +39,7 @@ isw = call_data_startswith
 async def get_or_close_lyrics(call: types.CallbackQuery):
     message, url = get_message_with_url(call)
     edit = call.message.edit_text
+    await call.message.edit_reply_markup()
 
     if message:
         markup = (
@@ -49,7 +50,7 @@ async def get_or_close_lyrics(call: types.CallbackQuery):
         method = AudDBot.ByUrl.song if isw(call, "close:") else AudDBot.ByUrl.lyrics
 
         tasker(
-            edit(Text.loading),
+            types.ChatActions.typing(),
             edit(await method(message, url, False), reply_markup=markup),
         )
 
@@ -58,6 +59,7 @@ async def get_or_close_lyrics(call: types.CallbackQuery):
 async def close_title(call: types.CallbackQuery):
     cached = call.data.split(":")[-1]
     edit = call.message.edit_text
+    await call.message.edit_reply_markup()
 
     do_get = AudDBot.Cached.lyrics if isw(call, "get:cached") else AudDBot.Cached.song
 
