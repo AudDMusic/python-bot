@@ -13,7 +13,7 @@ imageio-ffmpeg==0.3.0
 moviepy==1.0.0
 multidict==4.5.2
 numpy==1.16.3
-Pillow==6.0.0
+Pillow==6.2.0
 proglog==0.1.9
 pytz==2019.1
 requests==2.21.0
